@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Add and style data in Mapbox Studio</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+#legend {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 5px;
+  z-index: 1;
+}
+.legend-key {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}
+.legend-icon {
+  width: 24px;   
+  margin-right: 6px;
+  vertical-align: middle;
+}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="legend"></div>
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1IjoibmVpbC0xNyIsImEiOiJjbW5mMmttbDUwNmMxMnFweDZqYmQyczdmIn0.3To-L38LqY2Oj1DDMorVYA';
+  const map = new mapboxgl.Map({
+    container: 'map', // container ID
+    center: [-71.3622, 42.2897], // center viewport over NSSC
+    style: 'mapbox://styles/neil-17/cmnmdqm0a000p01s99xcgdeub',  //     mapbox://styles/{username}/{style_id}
+    zoom: 15 // starting zoom
+  });
+    // Our custom layers
+  const layers = ['Natick Soldiers Systems Center', 'Oaks', 'Pines', 'Hickories', 'Magnolias', 'Spruces', 'Junipers', 'Birches', 'Hemlocks', 'Ash', 'Maples', 'Other_genera']; 
+  // add title to the map
+    const title = document.createElement('h1');
+    title.textContent = 'NSSC Tree Species Map';
+    title.style.position = 'absolute';
+    title.style.top = '10px';
+    title.style.left = '10px';
+    title.style.color = 'blue';
+    title.style.fontSize = '24px';
+    title.style.fontFamily = 'Arial, sans-serif';
+    //transparent background behind title: 
+    title.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+    title.style.padding = '5px';
+    title.style.borderRadius = '5px';
+    title.style.zIndex = '1';
+    document.body.appendChild(title);
+
+    // Iterate over each layer and add our interactions-modify tutorial code
+  map.on('load', () => {
+    layers.forEach((layer) => {
+      // Click interaction
+      map.on('click', layer, (e) => {
+        const feature = e.features && e.features[0];
+        if (!feature) return;
+        const coords = feature.geometry && feature.geometry.coordinates.slice();
+        const props = feature.properties || {};
+        new mapboxgl.Popup({ offset: [0, -15] })
+          .setLngLat(coords || e.lngLat)
+          .setHTML(
+            `<h3>${props.Common_name || 'Unknown'}</h3>
+             <p>Scientific Name: ${props.Scientific_name || 'Unknown'}</p>`
+          )
+          .addTo(map);
+      });
+
+      // Mouse-enter interaction
+      map.on('mouseenter', layer, () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+
+      // Mouse-leave interaction
+      map.on('mouseleave', layer, () => {
+        map.getCanvas().style.cursor = '';
+      });
+    });
+  });
+ // create legend
+ const legend = document.getElementById('legend');
+
+  const layerIcons = {
+  Oaks: 'Oaks.svg',
+  Pines: 'Pines.svg',
+  Hickories: 'Hickories.svg',
+  Magnolias: 'Magnolias.svg',
+  Spruces: 'Spruces.svg',
+  Junipers: 'Junipers.svg',
+  Birches: 'Birches.svg',
+  Hemlocks: 'Hemlocks.svg',
+  Ash: 'Ash.svg',
+  Maples: 'Maples.svg',
+  Other_genera: 'Other_genera.svg'
+};
+
+layers.forEach((layer) => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+
+  if (layer === 'Natick Soldiers Systems Center') {
+    const key = document.createElement('span');
+    key.className = 'legend-key';
+    key.style.backgroundColor = '#ff0000';
+    item.appendChild(key);
+  } else {
+    const icon = document.createElement('img');
+    icon.className = 'legend-icon';
+    icon.src = layerIcons[layer];
+    icon.alt = layer;
+    icon.onerror = () => icon.style.display = 'none';
+    item.appendChild(icon);
+  }
+
+  const value = document.createElement('span');
+  value.textContent = layer;
+  item.appendChild(value);
+  legend.appendChild(item);
+});
+
+</script>
+
+</body>
+</html>
